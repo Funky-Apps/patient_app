@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "429589279697",
+    "project_id": "health-mob-38843",
+    "storage_bucket": "health-mob-38843.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429589279697:android:6786e7559b512a7ffe26f0",
+        "android_client_info": {
+          "package_name": "com.example.patient_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBLLbLw0m69jBkuDtYFC6IzxqxieN-44Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
