@@ -32,7 +32,7 @@ class _FormPageScreenState extends State<FormPageScreen> {
         'do_you_have_allergies': selectedAnswer1,
         'do_you_have_chronic_diseases': selectedAnswer2,
         'do_you_smoke': selectedAnswer3,
-        'do_you_have_high_blood_pressure': selectedAnswer4, 
+        'do_you_have_high_blood_pressure': selectedAnswer4,
         'have_you_had_any_surgeries': selectedAnswer5,
         'submitted_at': Timestamp.now(),
       });
