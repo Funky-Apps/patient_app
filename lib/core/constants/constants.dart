@@ -12,6 +12,4 @@ class Constants {
 
   static const appLogo = 'assets/images/health_mob.png';
 
-
-
 }
