@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:patient_app/core/constants/app_colors.dart';
-import 'package:patient_app/core/widgets/round_button.dart';
+import '../core/widgets/round_button.dart';
+import '../widgets/patient_form_widgets.dart'; // Ensure this import contains your custom widgets
 
 class FormPageScreen extends StatefulWidget {
   final String doctorUid;
@@ -14,26 +15,57 @@ class FormPageScreen extends StatefulWidget {
 
 class _FormPageScreenState extends State<FormPageScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  String? selectedAnswer1;
-  String? selectedAnswer2;
-  String? selectedAnswer3;
-  String? selectedAnswer4;
-  String? selectedAnswer5;
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _emergencyContactController = TextEditingController();
+  final TextEditingController _dietaryPreferencesController = TextEditingController();
+  final TextEditingController _additionalConcernsController = TextEditingController();
+
+  String? selectedGender = 'Male';
+  List<String> selectedConditions = [];
+  String? selectedMedication = 'No';
+  String? selectedSurgeries = 'No';
+  String? selectedAllergies = 'No';
+  List<String> selectedSymptoms = [];
+  String? selectedPainLevel;
+  String? selectedTravel = 'No';
+  String? selectedContactWithSickPerson = 'No';
+  String? selectedSmoke = 'No';
+  String? selectedAlcohol = 'No';
+  String? selectedExercise = 'No';
+  String? selectedSleep = '6-8';
+  String? dietaryPreferences = '';
+  String? additionalConcerns = '';
+  bool receiveEmail = false;
 
   Future<void> _submitForm() async {
     try {
       await FirebaseFirestore.instance.collection('submissions').doc(_phoneController.text).set({
         'patient_name': _nameController.text,
-        'age': _ageController.text,
+        'dob': _dobController.text,
+        'email': _emailController.text,
         'phone_number': _phoneController.text,
+        'address': _addressController.text,
+        'emergency_contact': _emergencyContactController.text,
+        'gender': selectedGender,
+        'conditions': selectedConditions,
+        'medication': selectedMedication,
+        'surgeries': selectedSurgeries,
+        'allergies': selectedAllergies,
+        'symptoms': selectedSymptoms,
+        'pain_level': selectedPainLevel,
+        'travel': selectedTravel,
+        'contact_with_sick_person': selectedContactWithSickPerson,
+        'smoke': selectedSmoke,
+        'alcohol': selectedAlcohol,
+        'exercise': selectedExercise,
+        'sleep': selectedSleep,
+        'dietary_preferences': dietaryPreferences,
+        'additional_concerns': additionalConcerns,
+        'receive_email': receiveEmail,
         'doctor_uid': widget.doctorUid,
-        'do_you_have_allergies': selectedAnswer1,
-        'do_you_have_chronic_diseases': selectedAnswer2,
-        'do_you_smoke': selectedAnswer3,
-        'do_you_have_high_blood_pressure': selectedAnswer4,
-        'have_you_had_any_surgeries': selectedAnswer5,
         'submitted_at': Timestamp.now(),
       });
 
@@ -46,26 +78,6 @@ class _FormPageScreenState extends State<FormPageScreen> {
         SnackBar(content: Text('Failed to submit form: $e')),
       );
     }
-  }
-
-
-  Widget _buildQuestion(
-      String question, String? selectedValue, ValueChanged<String?> onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(question),
-        Row(
-          children: [
-            Radio(
-                value: 'Yes', groupValue: selectedValue, onChanged: onChanged),
-            Text('Yes'),
-            Radio(value: 'No', groupValue: selectedValue, onChanged: onChanged),
-            Text('No'),
-          ],
-        ),
-      ],
-    );
   }
 
   @override
@@ -90,40 +102,140 @@ class _FormPageScreenState extends State<FormPageScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
+                // Replacing InputField with TextFieldWidget
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Full Name',
+                  hint: 'Enter your full name',
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Patient Name'),
                 ),
-                TextField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'Age'),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Date of Birth',
+                  hint: 'Enter your date of birth',
+                  controller: _dobController,
                 ),
-                TextField(
+                SizedBox(height: 10,),
+                GenderSelector(
+                  selectedGender: selectedGender,
+                  onGenderChange: (value) => setState(() => selectedGender = value),
+                ),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Email',
+                  hint: 'Enter your email address',
+                  controller: _emailController,
+                ),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Phone Number',
+                  hint: 'Enter your phone number',
                   controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(labelText: 'Phone Number'),
+                  isPhone: true,
                 ),
-                SizedBox(height: 20),
-                _buildQuestion('Do you have allergies?', selectedAnswer1,
-                    (value) => setState(() => selectedAnswer1 = value)),
-                _buildQuestion('Do you have chronic diseases?', selectedAnswer2,
-                    (value) => setState(() => selectedAnswer2 = value)),
-                _buildQuestion('Do you smoke?', selectedAnswer3,
-                    (value) => setState(() => selectedAnswer3 = value)),
-                _buildQuestion(
-                    'Do you have high blood pressure?',
-                    selectedAnswer4,
-                    (value) => setState(() => selectedAnswer4 = value)),
-                _buildQuestion('Have you had any surgeries?', selectedAnswer5,
-                    (value) => setState(() => selectedAnswer5 = value)),
-                SizedBox(height: 20),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Address',
+                  hint: 'Enter your address',
+                  controller: _addressController,
+                ),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Emergency Contact Name & Phone',
+                  hint: 'Enter emergency contact details',
+                  controller: _emergencyContactController,
+                ),
+                SizedBox(height: 10,),
+                MedicalConditionsSelector(
+                  selectedConditions: selectedConditions,
+                  onConditionChange: (condition, value) {
+                    setState(() {
+                      if (value) {
+                        selectedConditions.add(condition);
+                      } else {
+                        selectedConditions.remove(condition);
+                      }
+                    });
+                  },
+                ),
+                SizedBox(height: 10,),
+                MedicationSelector(
+                  selectedMedication: selectedMedication,
+                  onMedicationChange: (value) => setState(() => selectedMedication = value),
+                ),
+                SizedBox(height: 10,),
+                SurgeriesSelector(
+                  selectedSurgeries: selectedSurgeries,
+                  onSurgeriesChange: (value) => setState(() => selectedSurgeries = value),
+                ),
+                SizedBox(height: 10,),
+                SymptomsSelector(
+                  selectedSymptoms: selectedSymptoms,
+                  onSymptomChange: (symptom, value) {
+                    setState(() {
+                      if (value) {
+                        selectedSymptoms.add(symptom);
+                      } else {
+                        selectedSymptoms.remove(symptom);
+                      }
+                    });
+                  },
+                ),
+                SizedBox(height: 10,),
+                PainLevelSelector(
+                  selectedPainLevel: selectedPainLevel,
+                  onPainLevelChange: (value) => setState(() => selectedPainLevel = value),
+                ),
+                SizedBox(height: 10,),
+                LifestyleSelector(
+                  selectedSmoke: selectedSmoke,
+                  selectedAlcohol: selectedAlcohol,
+                  selectedExercise: selectedExercise,
+                  selectedSleep: selectedSleep,
+                  onChange: (field, value) {
+                    setState(() {
+                      switch (field) {
+                        case 'smoke':
+                          selectedSmoke = value;
+                          break;
+                        case 'alcohol':
+                          selectedAlcohol = value;
+                          break;
+                        case 'exercise':
+                          selectedExercise = value;
+                          break;
+                        case 'sleep':
+                          selectedSleep = value;
+                          break;
+                      }
+                    });
+                  },
+                ),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Dietary Preferences/Restrictions',
+                  hint: 'Enter your dietary preferences or restrictions',
+                  controller: _dietaryPreferencesController,
+                  onChanged: (value) => setState(() => dietaryPreferences = value),
+                ),
+                SizedBox(height: 10,),
+                TextFieldWidget(
+                  label: 'Do you have any specific concerns for the doctor?',
+                  hint: 'Enter any concerns you might have',
+                  controller: _additionalConcernsController,
+                  onChanged: (value) => setState(() => additionalConcerns = value),
+                ),
+                SizedBox(height: 10,),
+                EmailCheckbox(
+                  receiveEmail: receiveEmail,
+                  onChange: (value) => setState(() => receiveEmail = value!),
+                ),
+                SizedBox(height: 10,),
+                // Submit Button with light blue background
                 RoundButton(
-                  color: AppColors.darkBlueColor,
-            
-                  onPressed: _submitForm,
                   label: 'Submit',
-            
+                  onPressed: _submitForm,
+                  color: AppColors.lightBlueColor,
                 ),
               ],
             ),
