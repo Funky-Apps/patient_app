@@ -42,7 +42,22 @@ class _FormPageScreenState extends State<FormPageScreen> {
 
   Future<void> _submitForm() async {
     try {
-      await FirebaseFirestore.instance.collection('submissions').doc(_phoneController.text).set({
+      // Generate the current date in the desired format
+      final String datePart = DateTime.now().toIso8601String().split('T').first.replaceAll('-', '');
+
+      // Fetch the existing documents for the same date to determine the next patient number
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('submissions')
+          .where(FieldPath.documentId, isGreaterThanOrEqualTo: 'PAT-$datePart-')
+          .where(FieldPath.documentId, isLessThan: 'PAT-$datePart-999')
+          .get();
+
+      // Calculate the next available ID
+      final int nextId = querySnapshot.docs.length + 1;
+      final String patientId = 'PAT-$datePart-${nextId.toString().padLeft(3, '0')}';
+
+      await FirebaseFirestore.instance.collection('submissions').doc(patientId).set({
+        'patient_id': patientId, // Store the generated patient ID
         'patient_name': _nameController.text,
         'dob': _dobController.text,
         'email': _emailController.text,
@@ -79,6 +94,7 @@ class _FormPageScreenState extends State<FormPageScreen> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +161,8 @@ class _FormPageScreenState extends State<FormPageScreen> {
                   hint: 'Enter emergency contact details',
                   controller: _emergencyContactController,
                 ),
-                SizedBox(height: 10,),
+                SizedBox(height: 20,),
+                Text('Are you having any of these symptoms?',style: TextStyle(fontWeight: FontWeight.bold),),
                 MedicalConditionsSelector(
                   selectedConditions: selectedConditions,
                   onConditionChange: (condition, value) {
@@ -154,6 +171,20 @@ class _FormPageScreenState extends State<FormPageScreen> {
                         selectedConditions.add(condition);
                       } else {
                         selectedConditions.remove(condition);
+                      }
+                    });
+                  },
+                ),
+                SizedBox(height: 10,),
+
+                SymptomsSelector(
+                  selectedSymptoms: selectedSymptoms,
+                  onSymptomChange: (symptom, value) {
+                    setState(() {
+                      if (value) {
+                        selectedSymptoms.add(symptom);
+                      } else {
+                        selectedSymptoms.remove(symptom);
                       }
                     });
                   },
@@ -168,19 +199,7 @@ class _FormPageScreenState extends State<FormPageScreen> {
                   selectedSurgeries: selectedSurgeries,
                   onSurgeriesChange: (value) => setState(() => selectedSurgeries = value),
                 ),
-                SizedBox(height: 10,),
-                SymptomsSelector(
-                  selectedSymptoms: selectedSymptoms,
-                  onSymptomChange: (symptom, value) {
-                    setState(() {
-                      if (value) {
-                        selectedSymptoms.add(symptom);
-                      } else {
-                        selectedSymptoms.remove(symptom);
-                      }
-                    });
-                  },
-                ),
+
                 SizedBox(height: 10,),
                 PainLevelSelector(
                   selectedPainLevel: selectedPainLevel,

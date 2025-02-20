@@ -6,7 +6,7 @@ import 'package:patient_app/core/constants/app_colors.dart';
 import '../routes/routes_name.dart';
 
 class SelectDoctorScreen extends ConsumerStatefulWidget {
-  const SelectDoctorScreen({super.key});
+  const SelectDoctorScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<SelectDoctorScreen> createState() => _SelectDoctorScreenState();
@@ -18,11 +18,68 @@ class _SelectDoctorScreenState extends ConsumerState<SelectDoctorScreen> {
     try {
       QuerySnapshot querySnapshot =
       await FirebaseFirestore.instance.collection('doctors').get();
-      return querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print('Error fetching doctors: $e');
       return [];
     }
+  }
+
+  void _showDoctorDetailsDialog(BuildContext context, Map<String, dynamic> doctor) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(backgroundColor: AppColors.whiteColor,
+          title: Row(
+            children: [
+              Icon(Icons.person, color: AppColors.darkBlueColor),
+              SizedBox(width: 8),
+              Text('Doctor Details'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('UID: ${doctor['uid'] ?? 'N/A'}'),
+              SizedBox(height: 8),
+              Text('Name: ${doctor['name'] ?? 'Unknown'}'),
+              SizedBox(height: 8),
+              Text('Specialization: ${doctor['special_area'] ?? 'N/A'}'),
+              SizedBox(height: 8),
+              Text('Hospital: ${doctor['hospital'] ?? 'N/A'}'),
+              SizedBox(height: 8),
+              Text('Mobile Number: ${doctor['mobile_number'] ?? 'N/A'}'),
+
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Close'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.loginScreenColor,
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog first
+                Navigator.pushNamed(
+                  context,
+                  RoutesName.formPage,
+                  arguments: doctor['uid'].toString(), // Pass the doctor UID
+                );
+              },
+              child: Text('Fill form to Register'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -59,20 +116,16 @@ class _SelectDoctorScreenState extends ConsumerState<SelectDoctorScreen> {
                 var doctor = snapshot.data![index];
                 return Card(
                   color: AppColors.lighterBlue,
-                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     title: Text(doctor['name'] ?? 'Unknown'),
-                    subtitle: Text('${doctor['special_area']} - ${doctor['hospital']}'),
-                    trailing: Icon(Icons.arrow_forward_ios,color: AppColors.darkBlueColor,),
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        RoutesName.formPage,
-                        arguments: doctor['uid'].toString(), // Pass only the doctorUid here
-                      );
-                    },
-
-
+                    subtitle: Text(
+                        '${doctor['special_area']} - ${doctor['hospital']}'),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: AppColors.darkBlueColor,
+                    ),
+                    onTap: () => _showDoctorDetailsDialog(context, doctor),
                   ),
                 );
               },
